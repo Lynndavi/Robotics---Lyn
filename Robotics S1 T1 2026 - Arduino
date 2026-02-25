@@ -1,0 +1,47 @@
+// C++ code
+//
+const int potPin = A0;
+const int bluePin = 9;
+const int trigPin = 5;
+const int echoPin = 4;
+
+void setup() {
+  pinMode(bluePin, OUTPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  Serial.begin(9600);
+}
+
+long getDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duration = pulseIn(echoPin, HIGH);
+  return duration / 29 / 2;
+}
+  
+void loop() {
+  int potValue = analogRead(potPin);
+  int brightness = map(potValue, 0, 1023, 0, 255);
+
+  long distance = getDistance();
+
+  int detectDistance = 20;
+
+  if (distance > 0 & distance < detectDistance) {
+    analogWrite(bluePin, 255);
+    delay(200);
+    analogWrite(bluePin, 0);
+    delay(200);
+  } else {
+  analogWrite(bluePin, brightness);
+ }
+
+ Serial.print("Distance: ");
+ Serial.print(distance);
+ Serial.print(" cm | Brightness: ");
+ Serial.println(brightness);
+}
