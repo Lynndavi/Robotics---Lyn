@@ -1,12 +1,20 @@
-// C++ code
-//
+const int buzzer = 8;
+const int button = 2;
+
 const int potPin = A0;
-const int bluePin = 9;
+const int ledPin = 3;
 const int trigPin = 5;
 const int echoPin = 4;
 
+bool buzzerOn = false;
+bool lastButtonState = HIGH;
+bool currentState;
+
 void setup() {
-  pinMode(bluePin, OUTPUT);
+  pinMode(button, INPUT_PULLUP);
+  pinMode(buzzer, OUTPUT);
+
+  pinMode(ledPin, OUTPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   Serial.begin(9600);
@@ -22,26 +30,58 @@ long getDistance() {
   long duration = pulseIn(echoPin, HIGH);
   return duration / 29 / 2;
 }
-  
+
 void loop() {
+  currentState = digitalRead(button);
+
+  if (lastButtonState == HIGH && currentState == LOW) {
+    buzzerOn = !buzzerOn;
+    delay(200);
+  }
+
+  lastButtonState = currentState;
+
+  if (buzzerOn) {
+    for (int i = 300; i > 100; i--) {
+      tone(buzzer, i);
+      delay(2);
+
+      currentState = digitalRead(button);
+      if (lastButtonState == HIGH && currentState == LOW) {
+       buzzerOn = !buzzerOn;
+       delay(200);
+      }
+    }
+  }
+
+  lastButtonState = currentState;
+
+  if (buzzerOn) {
+    for(int i = 500; i > 100; i--) {
+      tone(buzzer, i);
+      delay(2);
+   }
+  }else {
+   noTone(buzzer);
+  }
+
   int potValue = analogRead(potPin);
   int brightness = map(potValue, 0, 1023, 0, 255);
 
   long distance = getDistance();
-
   int detectDistance = 20;
 
-  if (distance > 0 & distance < detectDistance) {
-    analogWrite(bluePin, 255);
-    delay(200);
-    analogWrite(bluePin, 0);
-    delay(200);
+ if (distance > 0 && distance < detectDistance) {
+    analogWrite(ledPin, 255);
+    delay(100);
+    analogWrite(ledPin, 0);
+    delay(100);
   } else {
-  analogWrite(bluePin, brightness);
- }
+    analogWrite(ledPin, brightness);
+  }
 
- Serial.print("Distance: ");
- Serial.print(distance);
- Serial.print(" cm | Brightness: ");
- Serial.println(brightness);
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.print(" cm | Brightness: ");
+  Serial.println(brightness);
 }
